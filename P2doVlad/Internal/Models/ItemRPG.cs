@@ -2,7 +2,7 @@
 {
     public abstract class ItemRPG
     {
-        public int Id { get; private set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();//Eu coloquei esse UUID para facilitar a identificação dos itens, mas ele não é necessário para o funcionamento do sistema. Ele vai facilitar a complementação com o Supabase, já que pretendo usar como id global. -Heitor
         public string Nome { get; private set; }
 
         private double preco;
@@ -31,6 +31,7 @@
 
         public string Tipo { get; protected set; }
 
+        protected ItemRPG() { }
         protected ItemRPG(string nome, double preco, int estoque)
         {
             if (string.IsNullOrWhiteSpace(nome))

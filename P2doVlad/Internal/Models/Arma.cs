@@ -2,6 +2,7 @@
 {
     public class Arma : ItemRPG
     {
+        private Arma() : base() { Tipo = "Arma"; }
         public Arma(string nome, double preco, int estoque)
             : base(nome, preco, estoque) { }
 
