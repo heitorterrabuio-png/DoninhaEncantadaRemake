@@ -2,13 +2,16 @@
 {
     public class Arma : ItemRPG
     {
-        private Arma() : base() { Tipo = "Arma"; }
-        public Arma(string nome, double preco, int estoque)
-            : base(nome, preco, estoque) { }
+        public string Raridade { get; set; }
+        public Arma(string nome, double preco, int estoque, string raridade)
+        : base(nome, preco, estoque)
+        {
+            Raridade = raridade;
+        }
 
         public override string ExibirDetalhes()
         {
-            return $"[ARMA] {Nome} | R$ {Preco} | Estoque: {Estoque}";
+            return $"[ARMA] {Nome} | R$ {Preco} | Estoque: {Estoque} | Raridade: {Raridade}";
         }
     }
 }

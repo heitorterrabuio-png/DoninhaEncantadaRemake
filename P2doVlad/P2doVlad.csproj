@@ -5,8 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-	<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile> <!--coloquei manualmente isso, para resolver o problema que o professor passou na P1. -HEITOR -->
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Internal\Models\Item.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AppAny.Quartz.EntityFrameworkCore.Migrations" Version="0.5.2" />

@@ -11,7 +11,8 @@ namespace P2doVlad.Internal.Repositories
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("\"Host=db.cgxzrzqzrapjpcehefwu.supabase.co;Port=5432;Database=P2_Vlad;Username=postgres;Password=(T2Vlad.Cruz);");
+            string? senhaBanco = Environment.GetEnvironmentVariable("DB_PASSWORD2");
+            optionsBuilder.UseNpgsql($"Host=db.cgxzrzqzrapjpcehefwu.supabase.co;Port=5432;Database=P2_Vlad;Username=postgres;Password={senhaBanco};");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
