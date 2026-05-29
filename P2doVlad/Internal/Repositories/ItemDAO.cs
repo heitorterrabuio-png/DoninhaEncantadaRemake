@@ -18,6 +18,7 @@ namespace P2doVlad.Internal.Repositories
             catch (Exception ex)
             {
                 throw new KeyNotFoundException("Erro na magia de clarividencia no banco Supabase na nuvem mística.", ex);
+
             }
         }
         public void SaveItem(ItemRPG item)

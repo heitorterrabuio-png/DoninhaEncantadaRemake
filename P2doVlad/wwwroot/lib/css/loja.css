@@ -1,0 +1,44 @@
+﻿body {
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.card {
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.table {
+    color: white;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(99,102,241,0.15);
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    border: none;
+}
+
+input, select {
+    background-color: #1e293b !important;
+    color: white !important;
+    border: 1px solid #334155 !important;
+}
+
+    input:focus, select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(99,102,241,.25) !important;
+    }

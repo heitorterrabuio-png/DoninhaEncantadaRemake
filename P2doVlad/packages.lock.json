@@ -46,6 +46,12 @@
           "Microsoft.EntityFrameworkCore": "10.0.8"
         }
       },
+      "Microsoft.Extensions.Configuration.Json": {
+        "type": "Direct",
+        "requested": "[10.0.8, )",
+        "resolved": "10.0.8",
+        "contentHash": "KLtAZ6A38s1pIfCO2ns6aG14NNGMYNZ4PBYfFK4M+R4A+xuSc6oklhqDcpHZxvDpyBWeFtR5C8iQBw2ng8tUHQ=="
+      },
       "Npgsql": {
         "type": "Direct",
         "requested": "[10.0.2, )",

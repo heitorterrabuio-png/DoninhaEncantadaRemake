@@ -1,0 +1,218 @@
+﻿@page "/gerencia-de-loja"
+@using P2doVlad.Internal.Repositories
+@using P2doVlad.Internal.Models
+@rendermode InteractiveServer
+
+<h3>🧙 Loja Mística - Gestão de Itens (CRUD)</h3>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5>📦 Forjar Novo Item Místico</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Nome do Artefato</label>
+                <input type="text" class="form-control" @bind="novoNome" placeholder="Ex: Espada Longa, Poção de Mana..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Preço (Peças de Ouro - gp)</label>
+                <input type="number" class="form-control" @bind="novoPreco" step="0.01" min="0" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estoque Inicial</label>
+                <input type="number" class="form-control" @bind="novoEstoque" min="0" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Tipo de Item</label>
+                <select class="form-select" @bind="tipoSelecionado">
+                    <option value="Arma">⚔️ Arma</option>
+                    <option value="Pocao">🧪 Poção</option>
+                </select>
+            </div>
+
+            @if (tipoSelecionado == "Arma")
+            {
+                <div class="col-md-3">
+                    <label class="form-label">Raridade da Arma</label>
+                    <select class="form-select" @bind="raridadeArma">
+                        <option value="Comum">Comum</option>
+                        <option value="Rara">Rara</option>
+                        <option value="Épica">Épica</option>
+                        <option value="Lendária">Lendária</option>
+                    </select>
+                </div>
+            }
+
+            <div class="col-md-12 d-flex justify-content-end align-items-end">
+                <button class="btn btn-primary" @onclick="ForjarItem">➕ Forjar e Salvar no Supabase</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(mensagemErro))
+{
+    <div class="alert alert-danger shadow-sm" role="alert">
+        💥 <strong>Falha na Transmutação:</strong> @mensagemErro
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">🔮 Inventário Atual do Cofre</h5>
+        <button class="btn btn-light btn-sm" @onclick="CarregarItens">🔄 Atualizar Prateleiras</button>
+    </div>
+    <div class="card-body p-0">
+        @if (itens == null)
+        {
+            <div class="p-4 text-center">
+                <p class="mb-0"><em>Invocando feitiço de clarividência (Carregando do Supabase...)</em></p>
+            </div>
+        }
+        else if (!itens.Any())
+        {
+            <div class="p-4 text-center">
+                <p class="mb-0 text-muted">Nenhum artefato mágico encontrado no banco de dados.</p>
+            </div>
+        }
+        else
+        {
+            <table class="table table-striped table-bordered table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID Global (UUID)</th>
+                        <th>Nome do Item</th>
+                        <th>Tipo</th>
+                        <th>Atributos Específicos</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in itens)
+                    {
+                        <tr>
+                            <td><small class="text-muted text-monospace">@item.Id.ToString().Substring(0, 8)...</small></td>
+                            <td><strong>@item.Nome</strong></td>
+                            <td>
+                                @if (item is Arma)
+                                {
+                                    <span class="badge bg-danger">⚔️ Arma</span>
+                                }
+                                else if (item is Pocao)
+                                {
+                                    <span class="badge bg-info text-dark">🧪 Poção</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.TipoTexto</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item is Arma arma)
+                                {
+                                    <span>Raridade: <strong class="text-uppercase">@arma.Raridade</strong></span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted"><em>Líquido alquímico refinado</em></span>
+                                }
+                            </td>
+                            <td>@item.Preco gp</td>
+                            <td>@item.Estoque unidades</td>
+                            <td class="text-center">
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeletarItem(item.Id)">🔥 Destruir</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    private ItemDAO itemDAO = new ItemDAO();
+    private List<ItemRPG> itens;
+    private string mensagemErro;
+
+    // Estados de Estado do Formulário
+    private string novoNome;
+    private double novoPreco = 50.00;
+    private int novoEstoque = 10;
+    private string tipoSelecionado = "Arma";
+    private string raridadeArma = "Comum";
+
+    protected override void OnInitialized()
+    {
+        CarregarItens();
+    }
+
+    private void CarregarItens()
+    {
+        try
+        {
+            mensagemErro = null;
+            itens = itemDAO.GetAllItems();
+        }
+        catch (Exception ex)
+        {
+            var erroDetalhado = ex.InnerException?.Message ?? ex.Message;
+            mensagemErro = $"Erro de leitura: {erroDetalhado}";
+            itens = new List<ItemRPG>();
+        }
+    }
+
+    private void ForjarItem()
+    {
+        try
+        {
+            mensagemErro = null;
+
+            if (string.IsNullOrWhiteSpace(novoNome))
+            {
+                mensagemErro = "O item necessita de um nome místico válido!";
+                return;
+            }
+
+            ItemRPG novoItem;
+
+            // Instanciação polimórfica exata espelhando seus construtores reais
+            if (tipoSelecionado == "Arma")
+            {
+                novoItem = new Arma(novoNome, novoPreco, novoEstoque, raridadeArma);
+            }
+            else
+            {
+                novoItem = new Pocao(novoNome, novoPreco, novoEstoque);
+            }
+
+            // Grava na tabela unificada (TPH) através do DAO
+            itemDAO.SaveItem(novoItem);
+
+            // Reseta o estado do formulário para o próximo item
+            novoNome = string.Empty;
+            CarregarItens();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao salvar item no banco: {ex.Message}";
+        }
+    }
+
+    private void DeletarItem(Guid id)
+    {
+        try
+        {
+            mensagemErro = null;
+            itemDAO.DeleteItem(id);
+            CarregarItens();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"O item resistiu à destruição: {ex.Message}";
+        }
+    }
+}

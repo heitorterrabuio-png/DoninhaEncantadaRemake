@@ -17,8 +17,6 @@ namespace P2doVlad.Internal.Models
         [Required(ErrorMessage = "O estoque do item é obrigatório.")]
         [Range(0, int.MaxValue, ErrorMessage = "Estoque não pode ser negativo.")]
         public int Estoque { get; internal set; }
-        [Required(ErrorMessage = "O tipo do item é obrigatório.")]
-
         [NotMapped]
         public string TipoTexto => this.GetType().Name;
 

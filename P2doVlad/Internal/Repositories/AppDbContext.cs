@@ -12,7 +12,15 @@ namespace P2doVlad.Internal.Repositories
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             string? senhaBanco = Environment.GetEnvironmentVariable("DB_PASSWORD2");
-            optionsBuilder.UseNpgsql($"Host=db.cgxzrzqzrapjpcehefwu.supabase.co;Port=5432;Database=P2_Vlad;Username=postgres;Password={senhaBanco};");
+            string conexao = "Host=aws-1-us-east-1.pooler.supabase.com;Database=postgres;Username=postgres.cgxzrzqzrapjpcehefwu;Password="+senhaBanco+";SSL Mode=Require;Trust Server Certificate=true";
+            optionsBuilder.UseNpgsql(conexao, builder => {
+                builder.EnableRetryOnFailure(
+                    maxRetryCount: 2,
+                    maxRetryDelay: TimeSpan.FromSeconds(1),
+                    errorCodesToAdd: null);
+            });
+            optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
+            optionsBuilder.EnableSensitiveDataLogging();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +31,7 @@ namespace P2doVlad.Internal.Repositories
 
             modelBuilder.Entity<Venda>()
                 .HasKey(v => new { v.NomeItem, v.DataVenda });
+            modelBuilder.Entity<Aventureiro>();
         }
     }
 }
