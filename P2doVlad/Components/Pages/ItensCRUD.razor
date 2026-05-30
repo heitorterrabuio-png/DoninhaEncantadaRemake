@@ -1,129 +1,205 @@
-﻿@page "/gerencia-de-loja"
+@page "/gerencia-de-loja"
 @using P2doVlad.Internal.Repositories
 @using P2doVlad.Internal.Models
 @rendermode InteractiveServer
 
-<h3>🧙 Loja Mística - Gestão de Itens (CRUD)</h3>
+<PageTitle>Inventário de Itens — Doninha Encantada</PageTitle>
 
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-dark text-white">
-        <h5>📦 Forjar Novo Item Místico</h5>
+<h2 style="font-family:var(--font-title); color:var(--gold-light); margin-bottom:0.2rem;">
+    ⚔️ Inventário da Loja
+</h2>
+<p style="color:var(--text-muted); font-style:italic; margin-bottom:1.5rem; font-size:0.9rem;">
+    Forje, transmute e destrua artefatos do cofre mágico.
+</p>
+
+<!-- ── Stat Cards ──────────────────────── -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <span class="stat-icon">📦</span>
+        <span class="stat-value">@(itens?.Count ?? 0)</span>
+        <span class="stat-label">Itens no Cofre</span>
     </div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Nome do Artefato</label>
-                <input type="text" class="form-control" @bind="novoNome" placeholder="Ex: Espada Longa, Poção de Mana..." />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Preço (Peças de Ouro - gp)</label>
-                <input type="number" class="form-control" @bind="novoPreco" step="0.01" min="0" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Estoque Inicial</label>
-                <input type="number" class="form-control" @bind="novoEstoque" min="0" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Tipo de Item</label>
-                <select class="form-select" @bind="tipoSelecionado">
-                    <option value="Arma">⚔️ Arma</option>
-                    <option value="Pocao">🧪 Poção</option>
-                </select>
-            </div>
-
-            @if (tipoSelecionado == "Arma")
-            {
-                <div class="col-md-3">
-                    <label class="form-label">Raridade da Arma</label>
-                    <select class="form-select" @bind="raridadeArma">
-                        <option value="Comum">Comum</option>
-                        <option value="Rara">Rara</option>
-                        <option value="Épica">Épica</option>
-                        <option value="Lendária">Lendária</option>
-                    </select>
-                </div>
-            }
-
-            <div class="col-md-12 d-flex justify-content-end align-items-end">
-                <button class="btn btn-primary" @onclick="ForjarItem">➕ Forjar e Salvar no Supabase</button>
-            </div>
-        </div>
+    <div class="stat-card">
+        <span class="stat-icon">⚔️</span>
+        <span class="stat-value">@(itens?.OfType<Arma>().Count() ?? 0)</span>
+        <span class="stat-label">Armas</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon">🧪</span>
+        <span class="stat-value">@(itens?.OfType<Pocao>().Count() ?? 0)</span>
+        <span class="stat-label">Poções</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon">💰</span>
+        <span class="stat-value">@(itens?.Sum(i => i.Estoque) ?? 0)</span>
+        <span class="stat-label">Unidades em Estoque</span>
     </div>
 </div>
 
+<!-- ── Alert de Erro ──────────────────── -->
 @if (!string.IsNullOrEmpty(mensagemErro))
 {
-    <div class="alert alert-danger shadow-sm" role="alert">
-        💥 <strong>Falha na Transmutação:</strong> @mensagemErro
+    <div class="alert-rpg-danger">
+        <span>💥</span>
+        <div><strong>Falha na Transmutação:</strong> @mensagemErro</div>
     </div>
 }
 
-<div class="card shadow-sm">
-    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">🔮 Inventário Atual do Cofre</h5>
-        <button class="btn btn-light btn-sm" @onclick="CarregarItens">🔄 Atualizar Prateleiras</button>
+@if (!string.IsNullOrEmpty(mensagemSucesso))
+{
+    <div class="alert-rpg-success">
+        <span>✨</span>
+        <div>@mensagemSucesso</div>
     </div>
-    <div class="card-body p-0">
+}
+
+<!-- ── Formulário: Forjar Novo Item ──── -->
+<div class="rpg-card mb-4">
+    <div class="rpg-card-header">
+        <h5>🔨 Forjar Novo Artefato</h5>
+        <button class="btn btn-sm btn-outline-gold" @onclick="ToggleForm">
+            @(mostrarForm ? "▲ Recolher" : "▼ Expandir")
+        </button>
+    </div>
+
+    @if (mostrarForm)
+    {
+        <div class="rpg-card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Nome do Artefato</label>
+                    <input type="text" class="form-control" @bind="novoNome"
+                           placeholder="Ex: Espada da Sombra, Poção de Vigor..." />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Preço (gp)</label>
+                    <input type="number" class="form-control" @bind="novoPreco" step="0.01" min="0" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estoque Inicial</label>
+                    <input type="number" class="form-control" @bind="novoEstoque" min="0" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tipo de Item</label>
+                    <select class="form-select" @bind="tipoSelecionado">
+                        <option value="Arma">⚔️ Arma</option>
+                        <option value="Pocao">🧪 Poção</option>
+                    </select>
+                </div>
+
+                @if (tipoSelecionado == "Arma")
+                {
+                    <div class="col-md-2">
+                        <label class="form-label">Raridade</label>
+                        <select class="form-select" @bind="raridadeArma">
+                            <option value="Comum">Comum</option>
+                            <option value="Rara">Rara</option>
+                            <option value="Épica">Épica</option>
+                            <option value="Lendária">Lendária</option>
+                        </select>
+                    </div>
+                }
+
+                <div class="col-12 d-flex justify-content-end">
+                    <button class="btn btn-gold" @onclick="ForjarItem">
+                        ➕ Forjar e Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- ── Tabela de Itens ────────────────── -->
+<div class="rpg-card">
+    <div class="rpg-card-header">
+        <h5>🔮 Cofre de Artefatos</h5>
+        <button class="btn btn-sm btn-outline-gold" @onclick="CarregarItens">
+            🔄 Atualizar
+        </button>
+    </div>
+
+    <div style="overflow-x:auto;">
         @if (itens == null)
         {
-            <div class="p-4 text-center">
-                <p class="mb-0"><em>Invocando feitiço de clarividência (Carregando do Supabase...)</em></p>
+            <div class="loading-state">
+                ✨ Invocando feitiço de clarividência...
             </div>
         }
         else if (!itens.Any())
         {
-            <div class="p-4 text-center">
-                <p class="mb-0 text-muted">Nenhum artefato mágico encontrado no banco de dados.</p>
+            <div class="empty-state">
+                <span class="empty-icon">📭</span>
+                <p>O cofre está vazio. Forje seu primeiro artefato!</p>
             </div>
         }
         else
         {
-            <table class="table table-striped table-bordered table-hover mb-0">
-                <thead class="table-dark">
+            <table class="rpg-table">
+                <thead>
                     <tr>
-                        <th>ID Global (UUID)</th>
-                        <th>Nome do Item</th>
+                        <th>UUID</th>
+                        <th>Nome</th>
                         <th>Tipo</th>
-                        <th>Atributos Específicos</th>
+                        <th>Atributos</th>
                         <th>Preço</th>
                         <th>Estoque</th>
-                        <th class="text-center">Ações</th>
+                        <th style="text-align:center;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in itens)
                     {
                         <tr>
-                            <td><small class="text-muted text-monospace">@item.Id.ToString().Substring(0, 8)...</small></td>
+                            <td>
+                                <span class="uuid-text">@item.Id.ToString()[..8]…</span>
+                            </td>
                             <td><strong>@item.Nome</strong></td>
                             <td>
                                 @if (item is Arma)
                                 {
-                                    <span class="badge bg-danger">⚔️ Arma</span>
+                                    <span class="badge-rpg badge-arma">⚔️ Arma</span>
                                 }
                                 else if (item is Pocao)
                                 {
-                                    <span class="badge bg-info text-dark">🧪 Poção</span>
+                                    <span class="badge-rpg badge-pocao">🧪 Poção</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">@item.TipoTexto</span>
+                                    <span class="badge-rpg badge-comum">@item.TipoTexto</span>
                                 }
                             </td>
                             <td>
                                 @if (item is Arma arma)
                                 {
-                                    <span>Raridade: <strong class="text-uppercase">@arma.Raridade</strong></span>
+                                    <span class="badge-rpg @GetBadgeRaridade(arma.Raridade)">
+                                        @arma.Raridade
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="text-muted"><em>Líquido alquímico refinado</em></span>
+                                    <span style="color:var(--text-dim); font-style:italic; font-size:0.85rem;">
+                                        Líquido alquímico
+                                    </span>
                                 }
                             </td>
-                            <td>@item.Preco gp</td>
-                            <td>@item.Estoque unidades</td>
-                            <td class="text-center">
-                                <button class="btn btn-danger btn-sm" @onclick="() => DeletarItem(item.Id)">🔥 Destruir</button>
+                            <td>
+                                <span style="color:var(--gold); font-family:var(--font-title); font-size:0.9rem;">
+                                    @item.Preco.ToString("0.##") gp
+                                </span>
+                            </td>
+                            <td>@item.Estoque un.</td>
+                            <td style="text-align:center;">
+                                <div style="display:flex; gap:0.4rem; justify-content:center;">
+                                    <button class="btn btn-sm btn-primary"
+                                            @onclick="() => AbrirModalEditar(item)">
+                                        ✏️ Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => AbrirModalDeletar(item)">
+                                        🔥 Destruir
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -133,22 +209,102 @@
     </div>
 </div>
 
+<!-- ── Modal: Editar Item ─────────────── -->
+@if (itemEditando != null)
+{
+    <div class="rpg-modal-backdrop" @onclick="FecharModalEditar">
+        <div class="rpg-modal" @onclick:stopPropagation>
+            <div class="rpg-modal-header">
+                <h5>✏️ Transmutar Artefato</h5>
+                <button class="rpg-modal-close" @onclick="FecharModalEditar">✕</button>
+            </div>
+            <div class="rpg-modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Nome do Artefato</label>
+                        <input type="text" class="form-control" @bind="editNome" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Preço (gp)</label>
+                        <input type="number" class="form-control" @bind="editPreco" step="0.01" min="0" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Estoque</label>
+                        <input type="number" class="form-control" @bind="editEstoque" min="0" />
+                    </div>
+                    @if (itemEditando is Arma armaEdit)
+                    {
+                        <div class="col-12">
+                            <label class="form-label">Raridade</label>
+                            <select class="form-select" @bind="editRaridade">
+                                <option value="Comum">Comum</option>
+                                <option value="Rara">Rara</option>
+                                <option value="Épica">Épica</option>
+                                <option value="Lendária">Lendária</option>
+                            </select>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="rpg-modal-footer">
+                <button class="btn btn-sm btn-outline-gold" @onclick="FecharModalEditar">Cancelar</button>
+                <button class="btn btn-sm btn-gold" @onclick="SalvarEdicao">💾 Transmutar</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── Modal: Confirmar Deletar ───────── -->
+@if (itemDeletando != null)
+{
+    <div class="rpg-modal-backdrop" @onclick="FecharModalDeletar">
+        <div class="rpg-modal" style="max-width:420px;" @onclick:stopPropagation>
+            <div class="rpg-modal-header">
+                <h5>🔥 Confirmar Destruição</h5>
+                <button class="rpg-modal-close" @onclick="FecharModalDeletar">✕</button>
+            </div>
+            <div class="rpg-modal-body">
+                <p style="color:var(--text-muted); font-size:0.95rem;">
+                    Tem certeza que deseja destruir o artefato
+                    <strong style="color:var(--gold-light);">@itemDeletando.Nome</strong>?
+                    Esta ação é irreversível.
+                </p>
+            </div>
+            <div class="rpg-modal-footer">
+                <button class="btn btn-sm btn-outline-gold" @onclick="FecharModalDeletar">Cancelar</button>
+                <button class="btn btn-sm btn-danger" @onclick="ConfirmarDeletar">🔥 Destruir</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private ItemDAO itemDAO = new ItemDAO();
     private List<ItemRPG> itens;
     private string mensagemErro;
+    private string mensagemSucesso;
+    private bool mostrarForm = true;
 
-    // Estados de Estado do Formulário
+    // Formulário de criação
     private string novoNome;
     private double novoPreco = 50.00;
     private int novoEstoque = 10;
     private string tipoSelecionado = "Arma";
     private string raridadeArma = "Comum";
 
-    protected override void OnInitialized()
-    {
-        CarregarItens();
-    }
+    // Modal Editar
+    private ItemRPG itemEditando;
+    private string editNome;
+    private double editPreco;
+    private int editEstoque;
+    private string editRaridade;
+
+    // Modal Deletar
+    private ItemRPG itemDeletando;
+
+    protected override void OnInitialized() => CarregarItens();
+
+    private void ToggleForm() => mostrarForm = !mostrarForm;
 
     private void CarregarItens()
     {
@@ -159,8 +315,7 @@
         }
         catch (Exception ex)
         {
-            var erroDetalhado = ex.InnerException?.Message ?? ex.Message;
-            mensagemErro = $"Erro de leitura: {erroDetalhado}";
+            mensagemErro = ex.InnerException?.Message ?? ex.Message;
             itens = new List<ItemRPG>();
         }
     }
@@ -170,49 +325,96 @@
         try
         {
             mensagemErro = null;
+            mensagemSucesso = null;
 
             if (string.IsNullOrWhiteSpace(novoNome))
             {
-                mensagemErro = "O item necessita de um nome místico válido!";
+                mensagemErro = "O artefato necessita de um nome místico válido!";
                 return;
             }
 
-            ItemRPG novoItem;
+            ItemRPG novoItem = tipoSelecionado == "Arma"
+                ? new Arma(novoNome, novoPreco, novoEstoque, raridadeArma)
+                : new Pocao(novoNome, novoPreco, novoEstoque);
 
-            // Instanciação polimórfica exata espelhando seus construtores reais
-            if (tipoSelecionado == "Arma")
-            {
-                novoItem = new Arma(novoNome, novoPreco, novoEstoque, raridadeArma);
-            }
-            else
-            {
-                novoItem = new Pocao(novoNome, novoPreco, novoEstoque);
-            }
-
-            // Grava na tabela unificada (TPH) através do DAO
             itemDAO.SaveItem(novoItem);
-
-            // Reseta o estado do formulário para o próximo item
+            mensagemSucesso = $"✨ \"{novoNome}\" foi forjado com sucesso no cofre!";
             novoNome = string.Empty;
+            novoPreco = 50.00;
+            novoEstoque = 10;
             CarregarItens();
         }
         catch (Exception ex)
         {
-            mensagemErro = $"Erro ao salvar item no banco: {ex.Message}";
+            mensagemErro = $"Erro ao salvar: {ex.Message}";
         }
     }
 
-    private void DeletarItem(Guid id)
+    // ── Modal Editar ────────────────────
+    private void AbrirModalEditar(ItemRPG item)
+    {
+        itemEditando = item;
+        editNome = item.Nome;
+        editPreco = item.Preco;
+        editEstoque = item.Estoque;
+        editRaridade = item is Arma a ? a.Raridade : "Comum";
+    }
+
+    private void FecharModalEditar() => itemEditando = null;
+
+    private void SalvarEdicao()
     {
         try
         {
             mensagemErro = null;
-            itemDAO.DeleteItem(id);
+            mensagemSucesso = null;
+
+            itemEditando.Nome = editNome;
+            itemEditando.Preco = editPreco;
+            itemEditando.Estoque = editEstoque;
+
+            if (itemEditando is Arma arma)
+                arma.Raridade = editRaridade;
+
+            itemDAO.UpdateItem(itemEditando);
+            mensagemSucesso = $"✨ \"{editNome}\" foi transmutado com sucesso!";
+            itemEditando = null;
+            CarregarItens();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao transmutar: {ex.Message}";
+        }
+    }
+
+    // ── Modal Deletar ───────────────────
+    private void AbrirModalDeletar(ItemRPG item) => itemDeletando = item;
+    private void FecharModalDeletar() => itemDeletando = null;
+
+    private void ConfirmarDeletar()
+    {
+        try
+        {
+            mensagemErro = null;
+            var nome = itemDeletando.Nome;
+            itemDAO.DeleteItem(itemDeletando.Id);
+            mensagemSucesso = $"🔥 \"{nome}\" foi destruído e removido do cofre.";
+            itemDeletando = null;
             CarregarItens();
         }
         catch (Exception ex)
         {
             mensagemErro = $"O item resistiu à destruição: {ex.Message}";
+            itemDeletando = null;
         }
     }
+
+    // ── Helpers ─────────────────────────
+    private string GetBadgeRaridade(string raridade) => raridade switch
+    {
+        "Rara"     => "badge-rara",
+        "Épica"    => "badge-epica",
+        "Lendária" => "badge-lendaria",
+        _          => "badge-comum"
+    };
 }

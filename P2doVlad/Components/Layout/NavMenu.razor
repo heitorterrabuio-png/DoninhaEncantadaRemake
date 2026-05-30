@@ -1,11 +1,28 @@
-﻿<div class="sidebar p-3">
-    <h3 class="logo">🧙 Loja RPG</h3>
+<div class="sidebar-logo">
+    <span class="logo-icon">🦦</span>
+    <span class="logo-title">Doninha Encantada</span>
+    <span class="logo-sub">Loja de Artefatos Místicos</span>
+</div>
 
-    <NavLink class="menu-item" href="">
-        🏠 Home
+<nav class="sidebar-nav">
+    <span class="nav-section-label">Navegação</span>
+
+    <NavLink class="menu-item" href="" Match="NavLinkMatch.All">
+        <span class="nav-icon">🏰</span>
+        Taverna
     </NavLink>
 
     <NavLink class="menu-item" href="gerencia-de-loja">
-        ⚔️ Inventário
+        <span class="nav-icon">⚔️</span>
+        Inventário de Itens
     </NavLink>
+
+    <NavLink class="menu-item" href="aventureiros">
+        <span class="nav-icon">🧙</span>
+        Aventureiros
+    </NavLink>
+</nav>
+
+<div class="sidebar-footer">
+    ✨ Doninha Encantada &copy; @DateTime.Now.Year
 </div>

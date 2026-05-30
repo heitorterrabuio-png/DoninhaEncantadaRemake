@@ -1,7 +1,40 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Doninha Encantada — Loja Mística</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-hero">
+    <span class="hero-emblem">🦦</span>
 
-Welcome to your new app.
+    <h1 class="hero-title">Doninha Encantada</h1>
+    <p class="hero-subtitle">Loja de Artefatos Místicos</p>
+
+    <div class="hero-divider"></div>
+
+    <p class="hero-desc">
+        Bem-vindo ao sistema de gestão da mais renomada loja de itens mágicos de toda a região.
+        Forje artefatos, cadastre aventureiros e controle o inventário do seu reino.
+    </p>
+
+    <div class="hero-actions">
+        <a href="gerencia-de-loja" class="btn btn-gold">⚔️ Gerenciar Inventário</a>
+        <a href="aventureiros" class="btn btn-primary">🧙 Ver Aventureiros</a>
+    </div>
+
+    <div class="hero-card-grid">
+        <div class="hero-card">
+            <span class="card-icon">⚔️</span>
+            <div class="card-title">Armas & Poções</div>
+            <div class="card-desc">Gerencie o inventário completo da loja com CRUD de itens mágicos por tipo.</div>
+        </div>
+        <div class="hero-card">
+            <span class="card-icon">🧙</span>
+            <div class="card-title">Aventureiros</div>
+            <div class="card-desc">Cadastre heróis, controle nível, raça, classe e fortuna de cada aventureiro.</div>
+        </div>
+        <div class="hero-card">
+            <span class="card-icon">☁️</span>
+            <div class="card-title">Supabase Cloud</div>
+            <div class="card-desc">Todos os dados persistidos em banco de dados na nuvem em tempo real.</div>
+        </div>
+    </div>
+</div>

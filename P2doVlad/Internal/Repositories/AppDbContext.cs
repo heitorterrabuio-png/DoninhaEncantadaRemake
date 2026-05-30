@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using P2doVlad.Internal.Models;
 
 namespace P2doVlad.Internal.Repositories
@@ -32,6 +33,8 @@ namespace P2doVlad.Internal.Repositories
             modelBuilder.Entity<Venda>()
                 .HasKey(v => new { v.NomeItem, v.DataVenda });
             modelBuilder.Entity<Aventureiro>();
+            
+            
         }
     }
 }
